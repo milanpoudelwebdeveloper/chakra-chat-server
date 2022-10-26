@@ -2,6 +2,10 @@ const express = require("express");
 const { Server } = require("socket.io");
 const helmet = require("helmet");
 const app = express();
+const morgan = require("morgan");
+const cors = require("cors");
+const fs = require("fs");
+require("dotenv").config();
 
 //server for the sockets
 const server = require("http").createServer(app);
@@ -17,13 +21,15 @@ const io = new Server(server, {
 //middlwares
 //helmet for security
 app.use(helmet());
+app.use(cors());
+app.use(morgan("dev"));
 
 //to receive json and treat it as the javascript objects
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.json("hello world");
-});
+fs.readdirSync("./routes").map((r) =>
+  app.use("/api/", require(`./routes/${r}`))
+);
 
 io.on("connect", (socket) => {});
 
